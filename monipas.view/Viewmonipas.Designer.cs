@@ -28,39 +28,21 @@
         /// </summary>
         private void InitializeComponent()
         {
-            panel1 = new Panel();
-            listBox = new ListBox();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Viewmonipas));
             button1 = new Button();
             label1 = new Label();
             OpenJson = new Button();
             OpenLogs = new Button();
-            panel1.SuspendLayout();
+            panel2 = new Panel();
+            listBox = new ListBox();
             SuspendLayout();
-            // 
-            // panel1
-            // 
-            panel1.BackColor = SystemColors.ActiveCaption;
-            panel1.Controls.Add(listBox);
-            panel1.Location = new Point(29, 77);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(498, 523);
-            panel1.TabIndex = 0;
-            // 
-            // listBox
-            // 
-            listBox.FormattingEnabled = true;
-            listBox.ItemHeight = 15;
-            listBox.Location = new Point(3, 3);
-            listBox.Name = "listBox";
-            listBox.Size = new Size(492, 514);
-            listBox.TabIndex = 1;
-            listBox.SelectedIndexChanged += listBox_SelectedIndexChanged;
             // 
             // button1
             // 
             button1.AccessibleDescription = "";
             button1.AccessibleName = "";
-            button1.Location = new Point(627, 149);
+            button1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            button1.Location = new Point(474, 80);
             button1.Name = "button1";
             button1.Size = new Size(126, 47);
             button1.TabIndex = 1;
@@ -81,7 +63,8 @@
             // 
             // OpenJson
             // 
-            OpenJson.Location = new Point(627, 287);
+            OpenJson.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            OpenJson.Location = new Point(474, 159);
             OpenJson.Name = "OpenJson";
             OpenJson.Size = new Size(126, 47);
             OpenJson.TabIndex = 4;
@@ -91,7 +74,8 @@
             // 
             // OpenLogs
             // 
-            OpenLogs.Location = new Point(627, 415);
+            OpenLogs.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            OpenLogs.Location = new Point(474, 238);
             OpenLogs.Name = "OpenLogs";
             OpenLogs.Size = new Size(126, 47);
             OpenLogs.TabIndex = 5;
@@ -99,31 +83,54 @@
             OpenLogs.UseVisualStyleBackColor = true;
             OpenLogs.Click += OpenLogs_Click_1;
             // 
+            // panel2
+            // 
+            panel2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            panel2.AutoSize = true;
+            panel2.BackgroundImage = (Image)resources.GetObject("panel2.BackgroundImage");
+            panel2.BackgroundImageLayout = ImageLayout.Zoom;
+            panel2.BorderStyle = BorderStyle.FixedSingle;
+            panel2.Location = new Point(474, 531);
+            panel2.Name = "panel2";
+            panel2.Size = new Size(126, 78);
+            panel2.TabIndex = 6;
+            // 
+            // listBox
+            // 
+            listBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            listBox.BackColor = SystemColors.ScrollBar;
+            listBox.FormattingEnabled = true;
+            listBox.ItemHeight = 15;
+            listBox.Location = new Point(32, 80);
+            listBox.Name = "listBox";
+            listBox.Size = new Size(422, 529);
+            listBox.TabIndex = 1;
+            listBox.SelectedIndexChanged += listBox_SelectedIndexChanged;
+            // 
             // Viewmonipas
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(829, 645);
+            ClientSize = new Size(625, 644);
+            Controls.Add(listBox);
+            Controls.Add(panel2);
             Controls.Add(OpenLogs);
             Controls.Add(OpenJson);
             Controls.Add(label1);
             Controls.Add(button1);
-            Controls.Add(panel1);
             Name = "Viewmonipas";
             Text = "MONIPAS - Envio automatico de dados";
             Load += Viewmonipas_Load;
-            panel1.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
-
-        private Panel panel1;
-        private ListBox listBox;
         private Button button1;
         private Label label1;
         private Button OpenJson;
         private Button OpenLogs;
+        private Panel panel2;
+        private ListBox listBox;
     }
 }

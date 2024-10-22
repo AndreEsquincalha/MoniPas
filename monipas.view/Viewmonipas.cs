@@ -1,5 +1,4 @@
 ﻿using MONIPAS.monipas.controller;
-using System.Windows.Forms;
 
 namespace MONIPAS.monipas.view
 {
@@ -15,17 +14,45 @@ namespace MONIPAS.monipas.view
 
         private void reenviardados_Click(object sender, EventArgs e)
         {
+            String caminhoArquivoJson = "configFTP.json";
+            ConfigModel config = ConfigModel.CarregarConfiguracao(caminhoArquivoJson);
+
+            if (string.IsNullOrEmpty(config.PastaLcl) || !Directory.Exists(config.PastaLcl))
+            {
+                MessageBox.Show("O caminho da pasta local no JSON é invalido ou não foi encontrado, Verifique a configuração do JSON");
+                return;
+            }
+
+            //Criar o dialogo de seleção de aruqivo
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                InitialDirectory = config.PastaLcl,
+                Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
+                Title = "Selecione um arquivo para reenviar",
+                Multiselect = true,
+            };
+
+            if(openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string[] filePaths = openFileDialog.FileNames;
+
+                //Reenviar o arquivo por FTP
+                MonitorController monitorController = new MonitorController(config.PastaLcl, config.FTPDetails, listBox);
+
+                foreach (string filePath in filePaths)
+                {
+                    monitorController.EnviarArquivoFTP(filePath);
+
+                    listBox.Invoke((MethodInvoker)delegate
+                    {
+                        listBox.Items.Insert(0, filePath);
+                    });
+                }
+            }
 
         }
-
         private void label1_Click(object sender, EventArgs e)
         {
-
-        }
-
-        private void configenvio_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void Viewmonipas_Load(object sender, EventArgs e)
