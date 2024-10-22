@@ -1,9 +1,6 @@
 ﻿using FluentFTP.Exceptions;
 using FluentFTP;
-using System.IO;
 using MONIPAS.monipas.model;
-using System.Windows.Forms;
-using Newtonsoft.Json;
 
 
 namespace MONIPAS.monipas.controller
@@ -54,9 +51,8 @@ namespace MONIPAS.monipas.controller
             // Enviar o arquivo via FTP após ser detectado
             EnviarArquivoFTP(arquivos);
 
-
             listBox.Invoke((MethodInvoker)delegate {
-                listBox.Items.Add(e.FullPath);
+                listBox.Items.Insert(0, e.FullPath);
             });
         }
 
@@ -112,8 +108,6 @@ namespace MONIPAS.monipas.controller
             }
 
         }
-
-
 
     }
 }
