@@ -47,8 +47,12 @@ namespace MONIPAS.monipas.controller
 
         private void OnChanged(object source, FileSystemEventArgs e)
         {
+
+            // Cria uma lista com o arquivo detectado
+            List<string> arquivos = new List<string> { e.FullPath };
+
             // Enviar o arquivo via FTP após ser detectado
-            EnviarArquivoFTP(e.FullPath);
+            EnviarArquivoFTP(arquivos);
 
 
             listBox.Invoke((MethodInvoker)delegate {
@@ -56,8 +60,10 @@ namespace MONIPAS.monipas.controller
             });
         }
 
-        public void EnviarArquivoFTP(string filePath)
+        public void EnviarArquivoFTP(List<string> filePaths)
         {
+            string logFilePath = "LOG.txt";
+
             try
             {
                 using (var client = new FtpClient(ftpDetails.Host, ftpDetails.Usuario, ftpDetails.Senha))
@@ -65,13 +71,24 @@ namespace MONIPAS.monipas.controller
                     // Conecta ao servidor FTP
                     client.Connect();
 
-                    // Usa o caminho remoto vindo do JSON (ftpDetails.PastaRmt)
-                    string remoteFilePath = $"{ftpDetails.PastaRmt}/{Path.GetFileName(filePath)}";
-
-                    // Envia o arquivo para o diretório FTP
-                    using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                    foreach(var filePath in filePaths)
                     {
-                        client.UploadFile(filePath, remoteFilePath);
+                        try
+                        {
+                            // Usa o caminho remoto vindo do JSON (ftpDetails.PastaRmt)
+                            string remoteFilePath = $"{ftpDetails.PastaRmt}/{Path.GetFileName(filePath)}";
+
+                            // Envia o arquivo para o diretório FTP
+                            using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                            {
+                                client.UploadFile(filePath, remoteFilePath);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            File.AppendAllText(logFilePath, "{filePath}");
+
+                        }
                     }
 
                     // Desconecta do servidor FTP

@@ -9,23 +9,19 @@ namespace MONIPAS.monipas.view
         public Viewmonipas()
         {
             InitializeComponent();
-
         }
 
 
         private void reenviardados_Click(object sender, EventArgs e)
         {
-
         }
 
         private void label1_Click(object sender, EventArgs e)
         {
-
         }
 
         private void configenvio_Click(object sender, EventArgs e)
         {
-
         }
 
         private void Viewmonipas_Load(object sender, EventArgs e)
@@ -45,12 +41,10 @@ namespace MONIPAS.monipas.view
 
         private void listBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-
         }
 
         private void OpenLogs_Click(object sender, EventArgs e)
         {
-
         }
 
         private void OpenJson_Click_1(object sender, EventArgs e)
@@ -66,8 +60,6 @@ namespace MONIPAS.monipas.view
             {
                 MessageBox.Show("O arquivo configFTP.json não foi encontrado.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-
 
         }
 
