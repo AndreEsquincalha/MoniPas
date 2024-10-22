@@ -2,10 +2,8 @@
 using FluentFTP;
 using MONIPAS.monipas.model;
 
-
 namespace MONIPAS.monipas.controller
 {
-
     public class MonitorController
     {
         private string caminhoPasta;
@@ -51,14 +49,15 @@ namespace MONIPAS.monipas.controller
             // Enviar o arquivo via FTP após ser detectado
             EnviarArquivoFTP(arquivos);
 
-            listBox.Invoke((MethodInvoker)delegate {
+            /*listBox.Invoke((MethodInvoker)delegate {
                 listBox.Items.Insert(0, e.FullPath);
-            });
+            });*/
         }
 
         public void EnviarArquivoFTP(List<string> filePaths)
         {
-            string logFilePath = "LOG.txt";
+            string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LOG.txt");
+            string currentFilePath = "";  // Variável para armazenar o arquivo atual
 
             try
             {
@@ -67,8 +66,9 @@ namespace MONIPAS.monipas.controller
                     // Conecta ao servidor FTP
                     client.Connect();
 
-                    foreach(var filePath in filePaths)
+                    foreach (var filePath in filePaths)
                     {
+                        currentFilePath = filePath;  // Armazena o arquivo atual
                         try
                         {
                             // Usa o caminho remoto vindo do JSON (ftpDetails.PastaRmt)
@@ -79,11 +79,16 @@ namespace MONIPAS.monipas.controller
                             {
                                 client.UploadFile(filePath, remoteFilePath);
                             }
+
+                            listBox.Invoke((MethodInvoker)delegate {
+                                listBox.Items.Insert(0, filePath);
+                            });
                         }
                         catch (Exception ex)
                         {
-                            File.AppendAllText(logFilePath, "{filePath}");
-
+                            File.AppendAllText(logFilePath, $"{filePath}{Environment.NewLine}");
+                            // Trata qualquer outro erro geral
+                            MessageBox.Show($"Erro inesperado: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
 
@@ -93,20 +98,22 @@ namespace MONIPAS.monipas.controller
             }
             catch (FtpException ftpEx)
             {
-                // Trata erros relacionados ao FTP
+                File.AppendAllText(logFilePath, $"{currentFilePath}{Environment.NewLine}");  // Usando currentFilePath
+                                                                                             // Trata erros relacionados ao FTP
                 MessageBox.Show($"Erro de FTP: {ftpEx.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (IOException ioEx)
             {
-                // Trata erros relacionados ao I/O (leitura/gravação de arquivos)
+                File.AppendAllText(logFilePath, $"{currentFilePath}{Environment.NewLine}");  // Usando currentFilePath
+                                                                                             // Trata erros relacionados ao I/O (leitura/gravação de arquivos)
                 MessageBox.Show($"Erro de E/S: {ioEx.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
-                // Trata qualquer outro erro geral
+                File.AppendAllText(logFilePath, $"{currentFilePath}{Environment.NewLine}");  // Usando currentFilePath
+                                                                                             // Trata qualquer outro erro geral
                 MessageBox.Show($"Erro inesperado: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
         }
 
     }

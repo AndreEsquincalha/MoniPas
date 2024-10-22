@@ -4,7 +4,6 @@ namespace MONIPAS.monipas.view
 {
     public partial class Viewmonipas : Form
     {
-
         public Viewmonipas()
         {
             InitializeComponent();
@@ -41,12 +40,10 @@ namespace MONIPAS.monipas.view
 
                 foreach (string filePath in filePaths)
                 {
-                    monitorController.EnviarArquivoFTP(filePath);
+                    List<string> arquivoUnico = new List<String> { filePath };
 
-                    listBox.Invoke((MethodInvoker)delegate
-                    {
-                        listBox.Items.Insert(0, filePath);
-                    });
+                    monitorController.EnviarArquivoFTP(arquivoUnico);
+
                 }
             }
 
