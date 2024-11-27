@@ -60,10 +60,9 @@ namespace MONIPAS.monipas.view
             string caminhoArquivoJson = @"configFTP.json";
             ConfigModel config = ConfigModel.CarregarConfiguracao(caminhoArquivoJson);
 
+
             // Inicializar o MonitorController com as informações do JSON
             MonitorController monitorController = new MonitorController(config.PastaLcl, config.FTPDetails, listBox);
-
-
             // Iniciar o monitoramento da pasta
             monitorController.StartMonitoring();
 
@@ -73,9 +72,6 @@ namespace MONIPAS.monipas.view
         {
         }
 
-        private void OpenLogs_Click(object sender, EventArgs e)
-        {
-        }
 
         private void OpenJson_Click_1(object sender, EventArgs e)
         {
@@ -95,7 +91,16 @@ namespace MONIPAS.monipas.view
 
         private void OpenLogs_Click_1(object sender, EventArgs e)
         {
+            string filePath = "LOG_SendFail.txt";
 
+            if (File.Exists(filePath))
+            {
+                System.Diagnostics.Process.Start("notepad.exe", filePath);
+            }
+            else
+            {
+                MessageBox.Show("O Arquivo de LOG não foi encontrado.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }
