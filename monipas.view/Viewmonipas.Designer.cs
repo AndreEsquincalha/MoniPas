@@ -79,9 +79,11 @@
             OpenLogs.Name = "OpenLogs";
             OpenLogs.Size = new Size(126, 47);
             OpenLogs.TabIndex = 5;
-            OpenLogs.Text = "LOG de dados não Enviados";
+            OpenLogs.Text = "LOG de dados Enviados";
             OpenLogs.UseVisualStyleBackColor = true;
             OpenLogs.Click += OpenLogs_Click_1;
+            //OPÇÃO ABAIXO DEIXA VISIVEL OU NÃO
+            OpenLogs.Visible = false;
             // 
             // panel2
             // 

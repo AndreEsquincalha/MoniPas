@@ -11,9 +11,18 @@ namespace MONIPAS.monipas.controller
         public FTPDetails FTPDetails { get; set; }
 
         // O método CarregarConfig deve estar dentro da classe
-        public static ConfigModel CarregarConfiguracao(string caminhoArquivo)
+        public static ConfigModel CarregarConfiguracao()
         {
-            using (StreamReader r = new StreamReader(caminhoArquivo))
+            // Caminho para o arquivo configFTP.json no AppData\Roaming\MONIPAS
+            string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MONIPAS");
+            string configFilePath = Path.Combine(appDataFolder, "configFTP.json");
+
+            if (!File.Exists(configFilePath))
+            {
+                throw new FileNotFoundException($"Arquivo de configuração não encontrado em: {configFilePath}");
+            }
+
+            using (StreamReader r = new StreamReader(configFilePath))
             {
                 string json = r.ReadToEnd();
                 ConfigModel? config = JsonConvert.DeserializeObject<ConfigModel>(json);
@@ -22,7 +31,7 @@ namespace MONIPAS.monipas.controller
                 {
                     throw new Exception("Falha ao carregar a configuração. Verifique o arquivo JSON.");
                 }
-                
+
                 return config;
             }
         }
