@@ -2,6 +2,7 @@ using MONIPAS.monipas.view;
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Windows.Forms;
 
 namespace MONIPAS
 {
@@ -54,6 +55,27 @@ namespace MONIPAS
 
                 string json = JsonSerializer.Serialize(defaultConfig, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(configFilePath, json);
+
+                string mensagem = $"Inicialização completa, A seguir você deverá configurar a pasta local em que o software irá monitorar\n" +
+                                  $"além das configurações do FTP de envio e a pasta remoto para onde os arquivos deverão ser enviados.\n\n";
+
+
+                DialogResult resultado = MessageBox.Show(
+                            mensagem,
+                            "Confirme abaixo após leitura.",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Question
+                        );
+
+
+                if (File.Exists(configFilePath))
+                {
+                    // Inicia o processo do Notepad e espera até que ele seja fechado
+                    using (var process = System.Diagnostics.Process.Start("notepad.exe", configFilePath))
+                    {
+                        process.WaitForExit(); // Aguarda o Notepad ser fechado
+                    }
+                }
             }
 
 

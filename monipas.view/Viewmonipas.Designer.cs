@@ -81,9 +81,8 @@
             OpenLogs.TabIndex = 5;
             OpenLogs.Text = "LOG de dados Enviados";
             OpenLogs.UseVisualStyleBackColor = true;
-            OpenLogs.Click += OpenLogs_Click_1;
-            //OPÇÃO ABAIXO DEIXA VISIVEL OU NÃO
             OpenLogs.Visible = false;
+            OpenLogs.Click += OpenLogs_Click_1;
             // 
             // panel2
             // 
@@ -92,9 +91,9 @@
             panel2.BackgroundImage = (Image)resources.GetObject("panel2.BackgroundImage");
             panel2.BackgroundImageLayout = ImageLayout.Zoom;
             panel2.BorderStyle = BorderStyle.FixedSingle;
-            panel2.Location = new Point(474, 531);
+            panel2.Location = new Point(490, 525);
             panel2.Name = "panel2";
-            panel2.Size = new Size(126, 78);
+            panel2.Size = new Size(91, 84);
             panel2.TabIndex = 6;
             // 
             // listBox
