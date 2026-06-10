@@ -6,7 +6,12 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>LogoMONIPAS.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="LogoMONIPAS.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="README.md" />
@@ -15,6 +20,8 @@
   <ItemGroup>
     <PackageReference Include="FluentFTP" Version="51.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="SSH.NET" Version="2024.1.0" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>

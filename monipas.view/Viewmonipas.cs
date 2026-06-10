@@ -14,11 +14,15 @@ namespace MONIPAS.monipas.view
         {
             InitializeComponent();
 
-            //adição do icone de bandeja do sistema:
-            // Criar NotifyIcon
+            Icon? formIcon = CarregarIconeAplicacao();
+            if (formIcon != null)
+            {
+                this.Icon = formIcon;
+            }
+
             notifyIcon = new NotifyIcon
             {
-                Icon = new Icon("./LogoMONIPAS.ico"), // Ícone padrão do sistema, substitua pelo seu
+                Icon = CarregarIconeAplicacao() ?? SystemIcons.Application,
                 Text = "MONIPAS - Monitoramento",
                 Visible = false
             };
@@ -80,19 +84,19 @@ namespace MONIPAS.monipas.view
 
         }
 
-        private void Viewmonipas_Load(object sender, EventArgs e)
+        private async void Viewmonipas_Load(object sender, EventArgs e)
         {
-            // Carregar a configuração do arquivo JSON
-            //string caminhoArquivoJson = @"configFTP.json";
+            try
+            {
+                ConfigModel config = ConfigModel.CarregarConfiguracao();
 
-            ConfigModel config = ConfigModel.CarregarConfiguracao();
-
-
-            // Inicializar o MonitorController com as informações do JSON
-            MonitorController monitorController = new MonitorController(config.PastaLcl, config.FTPDetails, listBox);
-            // Iniciar o monitoramento da pasta
-            monitorController.StartMonitoring();
-
+                MonitorController monitorController = new MonitorController(config.PastaLcl, config.FTPDetails, listBox);
+                await monitorController.StartMonitoringAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Falha ao iniciar o monitoramento: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void listBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -159,8 +163,40 @@ namespace MONIPAS.monipas.view
         {
             notifyIcon.Visible = false;
         }
-        
 
+        private static Icon? CarregarIconeAplicacao()
+        {
+            try
+            {
+                var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                using (var stream = assembly.GetManifestResourceStream("MONIPAS.LogoMONIPAS.ico"))
+                {
+                    if (stream != null)
+                    {
+                        return new Icon(stream);
+                    }
+                }
 
+                string? exeDir = Path.GetDirectoryName(Application.ExecutablePath);
+                string[] candidatos = new[]
+                {
+                    exeDir != null ? Path.Combine(exeDir, "LogoMONIPAS.ico") : null,
+                    Path.Combine(AppContext.BaseDirectory, "LogoMONIPAS.ico"),
+                    "./LogoMONIPAS.ico"
+                };
+
+                foreach (var caminho in candidatos)
+                {
+                    if (!string.IsNullOrEmpty(caminho) && File.Exists(caminho))
+                    {
+                        return new Icon(caminho);
+                    }
+                }
+            }
+            catch
+            {
+            }
+            return null;
+        }
     }
 }

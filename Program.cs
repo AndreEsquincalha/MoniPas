@@ -14,6 +14,12 @@ namespace MONIPAS
         [STAThread]
         static void Main()
         {
+            Application.ThreadException += (s, e) => ReportarErroFatal(e.Exception);
+            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+            {
+                if (e.ExceptionObject is Exception ex) ReportarErroFatal(ex);
+            };
+
             System.Globalization.CultureInfo.DefaultThreadCurrentCulture = new System.Globalization.CultureInfo("pt-BR");
             System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = new System.Globalization.CultureInfo("pt-BR");
 
@@ -46,7 +52,9 @@ namespace MONIPAS
                     PastaLcl = @"C:\",
                     FTPDetails = new
                     {
+                        Protocolo = "FTP",
                         Host = "Host/IP",
+                        Porta = 21,
                         Usuario = "user",
                         Senha = "password",
                         PastaRmt = "/pasta/remota"
@@ -83,6 +91,24 @@ namespace MONIPAS
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
             Application.Run(new Viewmonipas());
+        }
+
+        private static void ReportarErroFatal(Exception ex)
+        {
+            try
+            {
+                string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MONIPAS");
+                if (!Directory.Exists(appDataFolder)) Directory.CreateDirectory(appDataFolder);
+                string errorLogPath = Path.Combine(appDataFolder, "LOG_Errors.txt");
+                File.AppendAllText(errorLogPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] FATAL: {ex}\n\n");
+            }
+            catch { }
+
+            try
+            {
+                MessageBox.Show($"Erro fatal:\n\n{ex.Message}\n\nDetalhes salvos em LOG_Errors.txt.", "MONIPAS - Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch { }
         }
     }
 }

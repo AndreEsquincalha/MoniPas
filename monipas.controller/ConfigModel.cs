@@ -1,19 +1,18 @@
-﻿using MONIPAS.monipas.model;
+using MONIPAS.monipas.model;
 using Newtonsoft.Json;
+using System.Security.Cryptography;
 
 
 namespace MONIPAS.monipas.controller
 {
     public class ConfigModel
     {
-        public string PastaLcl { get; set; } // Caminho local da pasta
-        public string PastaRmt { get; set; }  // Caminho remoto da pasta no FTP
+        public string PastaLcl { get; set; }
+        public string PastaRmt { get; set; }
         public FTPDetails FTPDetails { get; set; }
 
-        // O método CarregarConfig deve estar dentro da classe
         public static ConfigModel CarregarConfiguracao()
         {
-            // Caminho para o arquivo configFTP.json no AppData\Roaming\MONIPAS
             string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MONIPAS");
             string configFilePath = Path.Combine(appDataFolder, "configFTP.json");
 
@@ -22,20 +21,47 @@ namespace MONIPAS.monipas.controller
                 throw new FileNotFoundException($"Arquivo de configuração não encontrado em: {configFilePath}");
             }
 
-            using (StreamReader r = new StreamReader(configFilePath))
+            string json = File.ReadAllText(configFilePath);
+            ConfigModel? config = JsonConvert.DeserializeObject<ConfigModel>(json);
+
+            if (config == null || config.FTPDetails == null)
             {
-                string json = r.ReadToEnd();
-                ConfigModel? config = JsonConvert.DeserializeObject<ConfigModel>(json);
-
-                if (config == null || config.FTPDetails == null)
-                {
-                    throw new Exception("Falha ao carregar a configuração. Verifique o arquivo JSON.");
-                }
-
-                return config;
+                throw new Exception("Falha ao carregar a configuração. Verifique o arquivo JSON.");
             }
+
+            string? senha = config.FTPDetails.Senha;
+
+            if (!string.IsNullOrEmpty(senha))
+            {
+                if (SenhaProtegida.EstaCriptografada(senha))
+                {
+                    try
+                    {
+                        config.FTPDetails.Senha = SenhaProtegida.Descriptografar(senha);
+                    }
+                    catch (CryptographicException)
+                    {
+                        throw new Exception(
+                            "Falha ao descriptografar a senha. O configFTP.json provavelmente foi copiado " +
+                            "de outro usuário/máquina (a chave do DPAPI é por usuário). " +
+                            "Edite o arquivo e cole a senha em texto puro — o app irá cifrá-la novamente no próximo início.");
+                    }
+                }
+                else
+                {
+                    config.FTPDetails.Senha = SenhaProtegida.Criptografar(senha);
+                    string jsonAtualizado = JsonConvert.SerializeObject(config, new JsonSerializerSettings
+                    {
+                        Formatting = Formatting.Indented,
+                        NullValueHandling = NullValueHandling.Ignore
+                    });
+                    File.WriteAllText(configFilePath, jsonAtualizado);
+
+                    config.FTPDetails.Senha = senha;
+                }
+            }
+
+            return config;
         }
     }
-
-
 }
