@@ -9,6 +9,11 @@ namespace MONIPAS.monipas.controller
     {
         public string PastaLcl { get; set; }
         public string PastaRmt { get; set; }
+
+        // Segundos que o arquivo precisa ficar sem alteração (tamanho/data) antes de ser enviado.
+        // Evita upload "pela metade" de arquivos escritos de forma incremental. Padrão: 20s.
+        public int? QuietudeSegundos { get; set; }
+
         public FTPDetails FTPDetails { get; set; }
 
         public static ConfigModel CarregarConfiguracao()

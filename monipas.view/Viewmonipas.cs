@@ -67,7 +67,7 @@ namespace MONIPAS.monipas.view
                 string[] filePaths = openFileDialog.FileNames;
 
                 //Reenviar o arquivo por FTP
-                MonitorController monitorController = new MonitorController(config.PastaLcl, config.FTPDetails, listBox);
+                MonitorController monitorController = new MonitorController(config.PastaLcl, config.FTPDetails, listBox, config.QuietudeSegundos ?? 20);
 
                 foreach (string filePath in filePaths)
                 {
@@ -90,7 +90,7 @@ namespace MONIPAS.monipas.view
             {
                 ConfigModel config = ConfigModel.CarregarConfiguracao();
 
-                MonitorController monitorController = new MonitorController(config.PastaLcl, config.FTPDetails, listBox);
+                MonitorController monitorController = new MonitorController(config.PastaLcl, config.FTPDetails, listBox, config.QuietudeSegundos ?? 20);
                 await monitorController.StartMonitoringAsync();
             }
             catch (Exception ex)

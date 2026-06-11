@@ -50,6 +50,7 @@ namespace MONIPAS
                 var defaultConfig = new
                 {
                     PastaLcl = @"C:\",
+                    QuietudeSegundos = 20,
                     FTPDetails = new
                     {
                         Protocolo = "FTP",

@@ -18,14 +18,17 @@ namespace MONIPAS.monipas.controller
         private readonly object _monitorLock = new object();
         private readonly object _envioLock = new object();
         private readonly object _logLock = new object();
+        private readonly int quietudeRequeridaMs;
 
         ConfigModel config = new ConfigModel();
 
-        public MonitorController(string caminhoPasta, FTPDetails ftpDetails, ListBox listBox)
+        public MonitorController(string caminhoPasta, FTPDetails ftpDetails, ListBox listBox, int quietudeSegundos = 20)
         {
             this.caminhoPasta = caminhoPasta;
             this.ftpDetails = ftpDetails;
             this.listBox = listBox;
+            // Garante um mínimo de 1s mesmo que a config traga 0/negativo.
+            this.quietudeRequeridaMs = Math.Max(1, quietudeSegundos) * 1000;
         }
 
         public async Task StartMonitoringAsync()
@@ -344,37 +347,80 @@ namespace MONIPAS.monipas.controller
             }
         }
 
+        // Parâmetros da detecção de "arquivo estável".
+        // O gerador (ex.: MigrisExport) escreve o arquivo de forma incremental: abre, anexa
+        // algumas linhas, fecha, e volta depois para anexar mais. Por isso checar apenas o
+        // lock (FileShare.None) não basta — ele dá "liberado" no intervalo entre as escritas.
+        // Só consideramos o arquivo pronto quando o tamanho E a data de modificação ficam
+        // INALTERADOS por um período de quietude contínuo (configurável via configFTP.json).
+        private const int IntervaloPollMs = 1000;       // verifica a cada 1s
+        private const int TempoMaximoEsperaMs = 300000; // desiste após 5 min (reenvia no próximo ciclo)
+
         /// <summary>
-        /// Aguarda o arquivo ser liberado pelo processo que o está escrevendo.
-        /// Tenta abrir em modo exclusivo (FileShare.None): enquanto o escritor mantiver
-        /// o arquivo aberto, lança IOException e tentamos de novo. Quando consegue abrir,
-        /// significa que a escrita terminou e o arquivo está íntegro para envio.
-        /// Retorna false se o arquivo continuar bloqueado após o tempo limite (será reenviado depois).
+        /// Aguarda o arquivo ficar ESTÁVEL antes de enviar: o tamanho e a data de última escrita
+        /// precisam permanecer inalterados por <see cref="quietudeRequeridaMs"/> contínuos, e o
+        /// arquivo precisa estar liberado (abrível em modo exclusivo). Isso evita enviar um arquivo
+        /// que ainda está sendo preenchido incrementalmente (upload "pela metade").
+        /// Retorna false se o arquivo continuar mudando/bloqueado após <see cref="TempoMaximoEsperaMs"/>.
         /// </summary>
         private bool AguardarArquivoLiberado(string caminho)
         {
-            const int maxTentativas = 20;
-            const int delayMs = 500; // até ~10s de espera total
+            long ultimoTamanho = -1;
+            DateTime ultimaEscrita = DateTime.MinValue;
+            int quietudeAcumuladaMs = 0;
+            int tempoTotalMs = 0;
 
-            for (int tentativa = 1; tentativa <= maxTentativas; tentativa++)
+            while (tempoTotalMs < TempoMaximoEsperaMs)
             {
                 try
                 {
-                    using (File.Open(caminho, FileMode.Open, FileAccess.Read, FileShare.None))
+                    FileInfo fi = new FileInfo(caminho);
+                    if (!fi.Exists)
                     {
-                        return true;
+                        return false; // arquivo sumiu (movido/excluído) — nada a enviar
                     }
-                }
-                catch (IOException)
-                {
-                    // Arquivo ainda em uso/em escrita; aguarda e tenta novamente.
-                    Thread.Sleep(delayMs);
+
+                    long tamanhoAtual = fi.Length;
+                    DateTime escritaAtual = fi.LastWriteTimeUtc;
+
+                    if (tamanhoAtual == ultimoTamanho && escritaAtual == ultimaEscrita)
+                    {
+                        // Sem mudanças desde a última checagem: acumula tempo de quietude.
+                        quietudeAcumuladaMs += IntervaloPollMs;
+
+                        if (quietudeAcumuladaMs >= quietudeRequeridaMs)
+                        {
+                            // Estável por tempo suficiente. Confirma que ninguém está com o arquivo aberto.
+                            try
+                            {
+                                using (File.Open(caminho, FileMode.Open, FileAccess.Read, FileShare.None))
+                                {
+                                    return true;
+                                }
+                            }
+                            catch (IOException)
+                            {
+                                // Ainda aberto pelo gerador: reinicia a contagem de quietude.
+                                quietudeAcumuladaMs = 0;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Mudou (cresceu ou foi reescrito): reinicia a contagem de quietude.
+                        ultimoTamanho = tamanhoAtual;
+                        ultimaEscrita = escritaAtual;
+                        quietudeAcumuladaMs = 0;
+                    }
                 }
                 catch (Exception ex)
                 {
-                    EscreverNoLogErro($"Erro ao verificar disponibilidade de '{caminho}': {ex.Message}");
+                    EscreverNoLogErro($"Erro ao verificar estabilidade de '{caminho}': {ex.Message}");
                     return false;
                 }
+
+                Thread.Sleep(IntervaloPollMs);
+                tempoTotalMs += IntervaloPollMs;
             }
 
             return false;
